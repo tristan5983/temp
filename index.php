@@ -38,8 +38,8 @@
         .font-display { font-family: 'Righteous', cursive; }
         .dot { display: flex; align-items: center; justify-content: center; }
         
-        /* Slot Spin Animation */
-        @keyframes spin-fast { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        /* RESTORED: Slot Spin Animation for classic reel effect (vertical translation) */
+        @keyframes spin-fast { 0% { transform: translateY(0); } 100% { transform: translateY(-100%); } }
         .animate-spin-fast { animation: spin-fast 0.05s linear infinite; }
 
         /* Roulette Spin Animation */
@@ -63,6 +63,12 @@
         .token-info::-webkit-scrollbar-track { background: #1e293b; }
         .token-info::-webkit-scrollbar-thumb { background: #38bdf8; border-radius: 3px; }
         .token-info::-webkit-scrollbar-thumb:hover { background: #0ea5e9; }
+        
+        /* Added overflow hidden to slot reels container to properly show the spinning effect */
+        .slot-reel-container {
+            overflow: hidden;
+            height: 80px; /* Fixed height to match inner div h-20 */
+        }
     </style>
 </head>
 <!-- Reduced overall padding on small screens for maximum content area -->
@@ -74,11 +80,11 @@
     </div>
     
 <script>
-    // --- Simulation Constants (UPDATED FOR 0.01 MIN BET) ---
+    // --- Simulation Constants (UPDATED FOR 1.00 MIN BET) ---
     const INITIAL_BALANCE = 5; 
     const TOKEN_NAME = 'BNCL'; // Big Nickel Token
-    const MIN_BET = 0.01; // CHANGED from 0.00001
-    const MAX_BET = 10.00;
+    const MIN_BET = 1.00; // CHANGED to 1.00
+    const MAX_BET = 10.00; // CHANGED to 10.00
     
     // User-provided Addresses
     const BNCL_CONTRACT_ADDRESS = "0x67aC2BB295F533D9E7f62Cf5B5Dc755E8bBb8A60"; 
@@ -236,7 +242,7 @@
         </button>`;
     };
     
-    // Function to handle bet selection
+    // Function to handle bet selection (UPDATED FOR WHOLE NUMBERS)
     const BetSelector = (currentGame) => {
         let currentBet, setBetFunc;
         if (currentGame === 'slots') {
@@ -250,19 +256,19 @@
             setBetFunc = 'setDiceBet';
         }
 
+        // Updated bet options to reflect whole numbers
         const betOptions = [
-            MIN_BET.toFixed(2), // Now 0.01
-            1.00.toFixed(2), 
+            MIN_BET.toFixed(2), // 1.00
             5.00.toFixed(2), 
-            MAX_BET.toFixed(2)
+            MAX_BET.toFixed(2) // 10.00
         ];
 
         return `
             <div class="flex flex-col space-y-3">
                 <div class="flex justify-center items-center space-x-2">
                     <label class="text-white text-lg font-semibold">Bet (${TOKEN_NAME}):</label>
-                    <!-- UPDATED: step to 0.01 and value to toFixed(2) -->
-                    <input type="number" min="${MIN_BET}" max="${MAX_BET}" step="0.01" value="${currentBet.toFixed(2)}" onchange="${setBetFunc}(this.value)" 
+                    <!-- UPDATED: step changed to 1 for integer steps -->
+                    <input type="number" min="${MIN_BET}" max="${MAX_BET}" step="1" value="${parseFloat(currentBet).toFixed(2)}" onchange="${setBetFunc}(this.value)" 
                            class="w-28 sm:w-32 p-2 rounded bg-slate-700 text-cyan-300 text-center font-mono">
                 </div>
                 <div class="flex justify-center space-x-2">
@@ -282,8 +288,11 @@
         return `<div class="text-center">
             <div class="flex justify-center my-6 space-x-4">
                 ${state.slotsReels.map(r => 
-                    `<div class="text-6xl p-4 w-1/4 h-20 bg-slate-700 rounded-lg text-yellow-500 flex items-center justify-center ${state.isGameActive ? 'animate-spin-fast' : ''}">
-                        ${r}
+                    // Added slot-reel-container for overflow:hidden and proper spinning visualization
+                    `<div class="slot-reel-container w-1/4 bg-slate-700 rounded-lg shadow-inner">
+                        <div class="text-6xl p-4 h-20 text-yellow-500 flex items-center justify-center ${state.isGameActive ? 'animate-spin-fast' : ''}">
+                            ${r}
+                        </div>
                     </div>`
                 ).join('')}
             </div>
@@ -431,17 +440,21 @@
     // Ensure all setBet functions parse to float and apply limits
     window.setSlotsBet = (v) => {
         const val = parseFloat(v) || MIN_BET;
-        const newBet = Math.max(MIN_BET, Math.min(MAX_BET, val));
+        // Enforce the new step of 1 for rounding
+        const roundedVal = Math.round(val);
+        const newBet = Math.max(MIN_BET, Math.min(MAX_BET, roundedVal));
         updateState({slotsBetAmount: newBet});
     };
     window.setDiceBet = (v) => {
         const val = parseFloat(v) || MIN_BET;
-        const newBet = Math.max(MIN_BET, Math.min(MAX_BET, val));
+        const roundedVal = Math.round(val);
+        const newBet = Math.max(MIN_BET, Math.min(MAX_BET, roundedVal));
         updateState({diceBetAmount: newBet});
     };
     window.setRouletteBet = (v) => {
         const val = parseFloat(v) || MIN_BET;
-        const newBet = Math.max(MIN_BET, Math.min(MAX_BET, val));
+        const roundedVal = Math.round(val);
+        const newBet = Math.max(MIN_BET, Math.min(MAX_BET, roundedVal));
         updateState({rouletteBetAmount: newBet});
     };
 
@@ -451,8 +464,8 @@
         const BET_AMOUNT = state.slotsBetAmount;
         if (state.isGameActive || state.balance < BET_AMOUNT) return;
         
-        // UPDATED: toFixed(2)
-        updateState({isGameActive:true, slotsMessage:`Spinning ${BET_AMOUNT.toFixed(2)} ${TOKEN_NAME}...`, slotsReels:['🎰','🎰','🎰']});
+        // Use toFixed(2) for display consistency (e.g., 1.00)
+        updateState({isGameActive:true, slotsMessage:`Spinning ${BET_AMOUNT.toFixed(2)} ${TOKEN_NAME}...`, slotsReels:['?','?','?']});
         
         try {        
             await deductBet(BET_AMOUNT);                         
@@ -487,7 +500,7 @@
         if (profit > 0) {
             const totalWin = profit + BET_AMOUNT;
             await addWin(totalWin);
-            // UPDATED: toFixed(2)
+            // Use toFixed(2) for display consistency (e.g., 10.00)
             updateState({isGameActive: false, slotsReels: finalReels, slotsMessage: `💰 JACKPOT! You won ${totalWin.toFixed(2)} ${TOKEN_NAME}!`});
         } else {
             updateState({isGameActive: false, slotsReels: finalReels, slotsMessage: "Try again! You lost your bet."});
@@ -498,7 +511,7 @@
         const BET_AMOUNT = state.rouletteBetAmount;
         if (state.isGameActive || state.balance < BET_AMOUNT) return;
         
-        // UPDATED: toFixed(2)
+        // Use toFixed(2) for display consistency (e.g., 10.00)
         updateState({isGameActive:true, rouletteResult: null, rouletteMessage:`Betting ${BET_AMOUNT.toFixed(2)} ${TOKEN_NAME} on ${color.toUpperCase()}...`});
         
         try {
@@ -517,7 +530,7 @@
                 updateState({
                     isGameActive:false, 
                     rouletteResult: resultColor,
-                    // UPDATED: toFixed(2)
+                    // Use toFixed(2) for display consistency (e.g., 10.00)
                     rouletteMessage: winAmount > 0 ? `Landed on ${resultColor}! You win ${winAmount.toFixed(2)} ${TOKEN_NAME}!` : `Landed on ${resultColor}. Better luck next time.`
                 });
             }, 3000);
@@ -550,7 +563,7 @@
                 updateState({
                     isGameActive:false, 
                     diceRollResult: [die1, die2],
-                    // UPDATED: toFixed(2)
+                    // Use toFixed(2) for display consistency (e.g., 10.00)
                     diceMessage: winAmount > 0 ? `Total is ${total}! You win ${winAmount.toFixed(2)} ${TOKEN_NAME}!` : `Total is ${total}. You lose.`
                 });
             }, 2000);
