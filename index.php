@@ -74,10 +74,10 @@
     </div>
     
 <script>
-    // --- Simulation Constants ---
+    // --- Simulation Constants (UPDATED FOR 0.01 MIN BET) ---
     const INITIAL_BALANCE = 5; 
     const TOKEN_NAME = 'BNCL'; // Big Nickel Token
-    const MIN_BET = 0.00001;
+    const MIN_BET = 0.01; // CHANGED from 0.00001
     const MAX_BET = 10.00;
     
     // User-provided Addresses
@@ -171,7 +171,8 @@
         const data = await res.json();
         
         if (data.balance !== undefined) {
-            state.balance = parseFloat(data.balance).toFixed(5);
+            // Balance displayed to 2 decimal places for consistency
+            state.balance = parseFloat(data.balance).toFixed(2); 
             state.isLoading = false;
         } else if (data.error === 'Not logged in') {
             state.isAuthReady = false;
@@ -250,7 +251,7 @@
         }
 
         const betOptions = [
-            MIN_BET.toFixed(5), 
+            MIN_BET.toFixed(2), // Now 0.01
             1.00.toFixed(2), 
             5.00.toFixed(2), 
             MAX_BET.toFixed(2)
@@ -260,8 +261,8 @@
             <div class="flex flex-col space-y-3">
                 <div class="flex justify-center items-center space-x-2">
                     <label class="text-white text-lg font-semibold">Bet (${TOKEN_NAME}):</label>
-                    <!-- Kept width fixed but ensured good padding for touch input -->
-                    <input type="number" min="${MIN_BET}" max="${MAX_BET}" step="0.00001" value="${currentBet.toFixed(5)}" onchange="${setBetFunc}(this.value)" 
+                    <!-- UPDATED: step to 0.01 and value to toFixed(2) -->
+                    <input type="number" min="${MIN_BET}" max="${MAX_BET}" step="0.01" value="${currentBet.toFixed(2)}" onchange="${setBetFunc}(this.value)" 
                            class="w-28 sm:w-32 p-2 rounded bg-slate-700 text-cyan-300 text-center font-mono">
                 </div>
                 <div class="flex justify-center space-x-2">
@@ -450,7 +451,8 @@
         const BET_AMOUNT = state.slotsBetAmount;
         if (state.isGameActive || state.balance < BET_AMOUNT) return;
         
-        updateState({isGameActive:true, slotsMessage:`Spinning ${BET_AMOUNT.toFixed(5)} ${TOKEN_NAME}...`, slotsReels:['🎰','🎰','🎰']});
+        // UPDATED: toFixed(2)
+        updateState({isGameActive:true, slotsMessage:`Spinning ${BET_AMOUNT.toFixed(2)} ${TOKEN_NAME}...`, slotsReels:['🎰','🎰','🎰']});
         
         try {        
             await deductBet(BET_AMOUNT);                         
@@ -481,12 +483,12 @@
             else if (r1 === '🍒') { profit = BET_AMOUNT * 5; }
             else if (r1 === '🍋') { profit = BET_AMOUNT * 4; }
         } 
-        // Removed the r1 === r2 win condition to substantially reduce winning odds.
 
         if (profit > 0) {
             const totalWin = profit + BET_AMOUNT;
             await addWin(totalWin);
-            updateState({isGameActive: false, slotsReels: finalReels, slotsMessage: `💰 JACKPOT! You won ${totalWin.toFixed(5)} ${TOKEN_NAME}!`});
+            // UPDATED: toFixed(2)
+            updateState({isGameActive: false, slotsReels: finalReels, slotsMessage: `💰 JACKPOT! You won ${totalWin.toFixed(2)} ${TOKEN_NAME}!`});
         } else {
             updateState({isGameActive: false, slotsReels: finalReels, slotsMessage: "Try again! You lost your bet."});
         }
@@ -496,7 +498,8 @@
         const BET_AMOUNT = state.rouletteBetAmount;
         if (state.isGameActive || state.balance < BET_AMOUNT) return;
         
-        updateState({isGameActive:true, rouletteResult: null, rouletteMessage:`Betting ${BET_AMOUNT.toFixed(5)} ${TOKEN_NAME} on ${color.toUpperCase()}...`});
+        // UPDATED: toFixed(2)
+        updateState({isGameActive:true, rouletteResult: null, rouletteMessage:`Betting ${BET_AMOUNT.toFixed(2)} ${TOKEN_NAME} on ${color.toUpperCase()}...`});
         
         try {
             await deductBet(BET_AMOUNT);
@@ -514,7 +517,8 @@
                 updateState({
                     isGameActive:false, 
                     rouletteResult: resultColor,
-                    rouletteMessage: winAmount > 0 ? `Landed on ${resultColor}! You win ${winAmount.toFixed(5)} ${TOKEN_NAME}!` : `Landed on ${resultColor}. Better luck next time.`
+                    // UPDATED: toFixed(2)
+                    rouletteMessage: winAmount > 0 ? `Landed on ${resultColor}! You win ${winAmount.toFixed(2)} ${TOKEN_NAME}!` : `Landed on ${resultColor}. Better luck next time.`
                 });
             }, 3000);
         } catch(e) { 
@@ -546,7 +550,8 @@
                 updateState({
                     isGameActive:false, 
                     diceRollResult: [die1, die2],
-                    diceMessage: winAmount > 0 ? `Total is ${total}! You win ${winAmount.toFixed(5)} ${TOKEN_NAME}!` : `Total is ${total}. You lose.`
+                    // UPDATED: toFixed(2)
+                    diceMessage: winAmount > 0 ? `Total is ${total}! You win ${winAmount.toFixed(2)} ${TOKEN_NAME}!` : `Total is ${total}. You lose.`
                 });
             }, 2000);
         } catch(e) { 
