@@ -4,15 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Royal Casino - 3D Slot Machine</title>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/babylon/5.57.1/babylon.js"></script>
-
-    <script src="https://cdn.jsdelivr.net/babylonjs/5.57.1/materialsLibrary/babylonjs.materials.min.js"></script>
-    
-    <script src="https://cdn.jsdelivr.net/babylonjs/5.57.1/loaders/babylonjs.loaders.min.js"></script>
-
     <style>
-        /* CSS from original file remains here, unchanged for brevity */
         * {
             margin: 0;
             padding: 0;
@@ -525,6 +518,7 @@
     </style>
 </head>
 <body>
+    <!-- Auth Container -->
     <div class="auth-container" id="authContainer">
         <div class="auth-box">
             <h1>🎰 ROYAL CASINO</h1>
@@ -560,6 +554,7 @@
         </div>
     </div>
 
+    <!-- Lobby Container -->
     <div class="lobby-container" id="lobbyContainer">
         <nav class="navbar">
             <div class="navbar-brand">🎰 ROYAL CASINO</div>
@@ -615,6 +610,7 @@
         </div>
     </div>
 
+    <!-- Game Container -->
     <div class="game-container" id="gameContainer">
         <canvas id="renderCanvas"></canvas>
         <div class="game-ui">
@@ -653,6 +649,7 @@
         </div>
     </div>
 
+    <!-- Funds Modal -->
     <div class="modal" id="fundsModal">
         <div class="modal-content">
             <h2 class="modal-title">Manage Funds</h2>
@@ -672,6 +669,6 @@
         </div>
     </div>
 
-    <script src="game.js"></script> 
+    <script src="game.js"></script>
 </body>
 </html>
