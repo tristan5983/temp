@@ -1,10 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Royal Casino - 3D Slot Machine</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/babylon/5.57.1/babylon.js"></script>
+
+    <!-- Babylon.js core and modules -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babylonjs/5.57.1/babylon.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babylonjs/5.57.1/babylonjs.loaders.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babylonjs/5.57.1/babylonjs.materials.min.js"></script>
+
     <style>
         * {
             margin: 0;
@@ -17,6 +22,39 @@
             background: linear-gradient(135deg, #0a0015 0%, #1a0033 50%, #2d0052 100%);
             color: white;
             overflow-x: hidden;
+        }
+
+        /* Simple loading overlay */
+        .loading-overlay {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle at center, #1a0033 0%, #050008 70%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 6px solid rgba(255, 255, 255, 0.1);
+            border-top-color: #ff0066;
+            animation: spin 0.9s linear infinite;
+        }
+
+        .loading-text {
+            font-size: 16px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: #ffd700;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
 
         /* Login Screen */
@@ -195,7 +233,7 @@
         }
 
         .lobby-content {
-            padding: 40px;
+            padding: 40px 20px 40px;
             max-width: 1400px;
             margin: 0 auto;
         }
@@ -313,8 +351,7 @@
         .game-container {
             display: none;
             position: fixed;
-            top: 0;
-            left: 0;
+            inset: 0;
             width: 100%;
             height: 100vh;
             z-index: 1000;
@@ -324,14 +361,12 @@
             width: 100%;
             height: 100%;
             touch-action: none;
+            display: block;
         }
 
         .game-ui {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            inset: 0;
             pointer-events: none;
         }
 
@@ -376,6 +411,8 @@
             gap: 20px;
             align-items: center;
             pointer-events: all;
+            flex-wrap: wrap;
+            justify-content: center;
         }
 
         .btn-spin {
@@ -476,10 +513,7 @@
         .modal {
             display: none;
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            inset: 0;
             background: rgba(0, 0, 0, 0.8);
             z-index: 2000;
             justify-content: center;
@@ -515,11 +549,38 @@
         .hidden {
             display: none !important;
         }
+
+        @media (max-width: 768px) {
+            .auth-box {
+                padding: 30px 20px;
+            }
+            .lobby-content {
+                padding: 20px 15px 30px;
+            }
+            .game-header {
+                flex-wrap: wrap;
+                gap: 15px;
+                padding: 10px 15px;
+            }
+            .game-stat-value {
+                font-size: 18px;
+            }
+            .btn-spin {
+                padding: 16px 40px;
+                font-size: 20px;
+            }
+        }
     </style>
 </head>
 <body>
+    <!-- Loading Overlay (hidden once JS is ready) -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Loading Royal Casino...</div>
+    </div>
+
     <!-- Auth Container -->
-    <div class="auth-container" id="authContainer">
+    <div class="auth-container" id="authContainer" aria-label="Login and registration">
         <div class="auth-box">
             <h1>🎰 ROYAL CASINO</h1>
             <p class="subtitle">Experience the thrill of 3D gaming</p>
@@ -528,12 +589,12 @@
             
             <div id="loginForm">
                 <div class="form-group">
-                    <label>Username</label>
-                    <input type="text" id="loginUsername" placeholder="Enter username">
+                    <label for="loginUsername">Username</label>
+                    <input type="text" id="loginUsername" placeholder="Enter username" autocomplete="username" />
                 </div>
                 <div class="form-group">
-                    <label>Password</label>
-                    <input type="password" id="loginPassword" placeholder="Enter password">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" placeholder="Enter password" autocomplete="current-password" />
                 </div>
                 <button class="btn btn-primary" onclick="login()">Login</button>
                 <button class="btn btn-secondary" onclick="showRegister()">Create Account</button>
@@ -541,12 +602,12 @@
 
             <div id="registerForm" class="hidden">
                 <div class="form-group">
-                    <label>Username</label>
-                    <input type="text" id="registerUsername" placeholder="Choose username">
+                    <label for="registerUsername">Username</label>
+                    <input type="text" id="registerUsername" placeholder="Choose username" autocomplete="username" />
                 </div>
                 <div class="form-group">
-                    <label>Password</label>
-                    <input type="password" id="registerPassword" placeholder="Choose password (min 6 chars)">
+                    <label for="registerPassword">Password</label>
+                    <input type="password" id="registerPassword" placeholder="Choose password (min 6 chars)" autocomplete="new-password" />
                 </div>
                 <button class="btn btn-primary" onclick="register()">Register</button>
                 <button class="btn btn-secondary" onclick="showLogin()">Back to Login</button>
@@ -565,56 +626,58 @@
             </div>
         </nav>
 
-        <div class="lobby-content">
-            <div class="jackpot-banner">
+        <main class="lobby-content">
+            <section class="jackpot-banner" aria-label="Progressive jackpot">
                 <div class="jackpot-label">🏆 Progressive Jackpot 🏆</div>
                 <div class="jackpot-amount">$<span id="jackpotAmount">10000</span></div>
-            </div>
+            </section>
 
             <h2 style="margin-bottom: 20px; font-size: 32px;">🎮 Available Games</h2>
             
-            <div class="games-grid">
-                <div class="game-card" onclick="playGame('slots')">
+            <section class="games-grid" aria-label="Game selection">
+                <!-- Slots game card -->
+                <article class="game-card" onclick="playGame()">
                     <div class="game-card-image">🎰</div>
                     <div class="game-card-content">
                         <div class="game-card-title">Classic Slots 3D</div>
                         <div class="game-card-description">
-                            Spin the reels in stunning 3D! Match symbols to win big. Features progressive jackpot!
+                            Spin the reels in stunning 3D! Match symbols to win big. Features a progressive jackpot and bonus effects.
                         </div>
-                        <button class="btn-play">PLAY NOW</button>
+                        <button class="btn-play" type="button">PLAY NOW</button>
                     </div>
-                </div>
+                </article>
 
-                <div class="game-card" style="opacity: 0.5; cursor: not-allowed;">
+                <!-- Coming soon placeholder games -->
+                <article class="game-card" style="opacity: 0.5; cursor: not-allowed;">
                     <div class="game-card-image">🃏</div>
                     <div class="game-card-content">
                         <div class="game-card-title">Poker 3D</div>
                         <div class="game-card-description">
                             Coming soon! Play Texas Hold'em in immersive 3D.
                         </div>
-                        <button class="btn-play" disabled>COMING SOON</button>
+                        <button class="btn-play" type="button" disabled>COMING SOON</button>
                     </div>
-                </div>
+                </article>
 
-                <div class="game-card" style="opacity: 0.5; cursor: not-allowed;">
+                <article class="game-card" style="opacity: 0.5; cursor: not-allowed;">
                     <div class="game-card-image">🎲</div>
                     <div class="game-card-content">
                         <div class="game-card-title">Roulette 3D</div>
                         <div class="game-card-description">
                             Coming soon! Spin the wheel and place your bets!
                         </div>
-                        <button class="btn-play" disabled>COMING SOON</button>
+                        <button class="btn-play" type="button" disabled>COMING SOON</button>
                     </div>
-                </div>
-            </div>
-        </div>
+                </article>
+            </section>
+        </main>
     </div>
 
     <!-- Game Container -->
     <div class="game-container" id="gameContainer">
         <canvas id="renderCanvas"></canvas>
         <div class="game-ui">
-            <div class="game-header">
+            <header class="game-header">
                 <div class="game-stat">
                     <div class="game-stat-label">Balance</div>
                     <div class="game-stat-value">$<span id="gameBalance">0</span></div>
@@ -631,18 +694,18 @@
                     <div class="game-stat-label">Jackpot</div>
                     <div class="game-stat-value">$<span id="gameJackpot">0</span></div>
                 </div>
-            </div>
+            </header>
 
             <div class="game-controls">
-                <button class="btn-back" onclick="backToLobby()">← Back</button>
+                <button class="btn-back" type="button" onclick="backToLobby()">← Back</button>
                 
-                <div class="bet-controls">
-                    <button class="bet-btn" onclick="changeBet(-5)">-</button>
+                <div class="bet-controls" aria-label="Bet adjustment">
+                    <button class="bet-btn" type="button" onclick="changeBet(-5)">-</button>
                     <div class="bet-amount">$<span id="betDisplay">10</span></div>
-                    <button class="bet-btn" onclick="changeBet(5)">+</button>
+                    <button class="bet-btn" type="button" onclick="changeBet(5)">+</button>
                 </div>
                 
-                <button class="btn-spin" id="spinButton" onclick="spin()">SPIN</button>
+                <button class="btn-spin" id="spinButton" type="button" onclick="spin()">SPIN</button>
             </div>
 
             <div class="result-overlay" id="resultOverlay"></div>
@@ -650,25 +713,34 @@
     </div>
 
     <!-- Funds Modal -->
-    <div class="modal" id="fundsModal">
+    <div class="modal" id="fundsModal" aria-modal="true" role="dialog">
         <div class="modal-content">
             <h2 class="modal-title">Manage Funds</h2>
             <div id="fundsError" class="error-message hidden"></div>
             
             <div class="form-group">
-                <label>Amount ($)</label>
-                <input type="number" id="fundsAmount" placeholder="Enter amount" min="1" max="10000">
+                <label for="fundsAmount">Amount ($)</label>
+                <input type="number" id="fundsAmount" placeholder="Enter amount" min="1" max="10000" />
             </div>
             
             <div class="modal-buttons">
-                <button class="btn btn-primary" onclick="addFunds()">Add Funds</button>
-                <button class="btn btn-secondary" onclick="withdrawFunds()">Withdraw</button>
+                <button class="btn btn-primary" type="button" onclick="addFunds()">Add Funds</button>
+                <button class="btn btn-secondary" type="button" onclick="withdrawFunds()">Withdraw</button>
             </div>
             
-            <button class="btn btn-secondary" onclick="closeFundsModal()" style="margin-top: 10px;">Close</button>
+            <button class="btn btn-secondary" type="button" onclick="closeFundsModal()" style="margin-top: 10px;">Close</button>
         </div>
     </div>
 
+    <!-- Your game logic -->
     <script src="game.js"></script>
+
+    <!-- Tiny script to hide loading once JS is parsed -->
+    <script>
+        window.addEventListener('load', function () {
+            var overlay = document.getElementById('loadingOverlay');
+            if (overlay) overlay.style.display = 'none';
+        });
+    </script>
 </body>
 </html>
