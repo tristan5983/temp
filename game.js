@@ -318,51 +318,71 @@ class SlotMachineScene extends Phaser.Scene {
         });
         this.load.image('slot_frame_ui', '/textures/slot_frame_ui.png');
         this.load.image('coin', '/textures/coin.png');
-        // The newly created asset
-        this.load.image('frame', '/textures/frame_glow.png'); 
+        // The newly created asset (optional - can use rectangle for glow)
+        // this.load.image('frame', '/textures/frame_glow.png'); 
     }
 
     create() {
-        sceneInstance = this; // Set the global reference
+        sceneInstance = this;
 
         const { gameWidth, gameHeight } = this;
         const reelCount = 3;
-        const symbolSize = 150; 
-        const reelXPositions = [gameWidth / 2 - 170, gameWidth / 2, gameWidth / 2 + 170];
+        const symbolSize = 150;
         
-        // 1. Background and Frame
+        // Updated reel positions to match the background windows
+        const reelXPositions = [
+            gameWidth / 2 - 177.5,  // Left reel
+            gameWidth / 2,           // Center reel  
+            gameWidth / 2 + 177.5    // Right reel
+        ];
+        
+        // Vertical center for the reels
+        const reelCenterY = gameHeight / 2 - 15; // Adjusted to match background window position
+        
+        // 1. Background Frame
         const frame = this.add.image(gameWidth / 2, gameHeight / 2, 'slot_frame_ui');
-        frame.setScale(gameWidth / frame.width, gameHeight / frame.height);
+        frame.setDisplaySize(gameWidth, gameHeight);
 
-        // 2. Reel Masks (to hide symbols above/below the visible area)
+        // 2. Create Reel Masks and Containers
         for (let i = 0; i < reelCount; i++) {
+            // Create mask for each reel (matches the white/light gray windows in the background)
             const maskGraphics = this.make.graphics({ x: 0, y: 0, add: false });
             maskGraphics.fillRect(
-                reelXPositions[i] - symbolSize / 2, 
-                gameHeight / 2 - (symbolSize * 1.5), 
-                symbolSize, 
-                symbolSize * 3 // Cover three symbol heights
+                reelXPositions[i] - 77.5,  // Window width is 155px, so half is 77.5
+                reelCenterY - 120,          // Window height is 240px, so half is 120
+                155,                         // Width of visible reel window
+                240                          // Height of visible reel window (shows ~1.6 symbols)
             );
             const mask = maskGraphics.createGeometryMask();
 
-            // 3. Create Reel Container
+            // Create Reel Container
             const reel = this.add.container(reelXPositions[i], 0);
             reel.setMask(mask);
             this.reels.push(reel);
-            this.reelStops.push(0); // Initial position
+            this.reelStops.push(0);
 
-            // Add glow frames for win effects
-            const glowFrame = this.add.image(reelXPositions[i], gameHeight / 2, 'frame');
-            glowFrame.setScale(0.9);
-            glowFrame.setTint(0xffaa00);
+            // Add glow frame for win effects (using rectangle instead of image)
+            const glowFrame = this.add.rectangle(
+                reelXPositions[i], 
+                reelCenterY, 
+                155, 
+                240, 
+                0xffaa00, 
+                0
+            );
+            glowFrame.setStrokeStyle(4, 0xffaa00);
             glowFrame.setVisible(false);
             this.glowFrames.push(glowFrame);
 
-            // Populate reel with symbols (e.g., 20 positions)
+            // Populate reel with symbols (20 positions for smooth spinning)
             for (let j = 0; j < 20; j++) {
                 const randomSymbolKey = Phaser.Math.RND.pick(SYMBOLS);
-                const symbol = this.add.image(0, gameHeight / 2 + (j - 10) * symbolSize, randomSymbolKey);
-                symbol.setScale(0.9);
+                const symbol = this.add.image(
+                    0, 
+                    reelCenterY + (j - 10) * symbolSize, 
+                    randomSymbolKey
+                );
+                symbol.setScale(0.85); // Slightly smaller to fit the window better
                 reel.add(symbol);
             }
         }
@@ -391,33 +411,40 @@ class SlotMachineScene extends Phaser.Scene {
         const symbolSize = 150;
         const baseSpeed = 1000;
         const durationMultiplier = 0.5;
+        const reelCenterY = this.gameHeight / 2 - 15; // Match the create() method
 
-        // Map final symbols to the reel's list of symbols
-        const finalSymbolKeys = result.finalSymbols; 
+        const finalSymbolKeys = result.finalSymbols;
 
         this.reels.forEach((reel, i) => {
-            // Find the index of the final symbol we want to land on
+            // Find the target symbol to land on
             const targetSymbolKey = finalSymbolKeys[i];
-            const targetIndex = reel.list.findIndex(img => img.texture.key === targetSymbolKey && img.y === this.gameHeight / 2);
+            const targetIndex = reel.list.findIndex(
+                img => img.texture.key === targetSymbolKey && 
+                Math.abs(img.y - reelCenterY) < symbolSize / 2
+            );
 
-            // Calculate target Y offset to position the symbol exactly in the center
-            const targetY = reel.list[targetIndex].y;
-            const yOffset = this.gameHeight / 2 - targetY;
+            // If exact match not found, find closest symbol with that key
+            let symbolIndex = targetIndex;
+            if (symbolIndex === -1) {
+                symbolIndex = reel.list.findIndex(img => img.texture.key === targetSymbolKey);
+            }
+
+            const targetY = reel.list[symbolIndex].y;
+            const yOffset = reelCenterY - targetY;
             
-            // Generate a random additional distance for realistic spin
-            const overshoot = Phaser.Math.Between(5, 10) * symbolSize; 
+            // Random overshoot for realistic spin effect
+            const overshoot = Phaser.Math.Between(5, 10) * symbolSize;
             const spinDistance = yOffset - overshoot;
 
-            // Apply the new position to the container
             reel.y = spinDistance;
 
             this.tweens.add({
                 targets: reel,
-                y: yOffset, // End Y is the calculated offset
-                duration: baseSpeed + i * baseSpeed * durationMultiplier, // Staggered duration
-                ease: 'Back.easeOut', 
+                y: yOffset,
+                duration: baseSpeed + i * baseSpeed * durationMultiplier,
+                ease: 'Back.easeOut',
                 onComplete: () => {
-                    this.reelStops[i] = targetY; // Save stop position (mostly for reference)
+                    this.reelStops[i] = targetY;
                     if (i === this.reels.length - 1) {
                         this.onSpinComplete(result);
                     }
