@@ -23,9 +23,12 @@
     
     <style>
         :root {
-            --primary-color: #ffcc00; /* Gold/Yellow */
-            --secondary-color: #8c0000; /* Deep Red */
+            /* Updated for a brighter, golden, and purple theme */
+            --primary-color: #ffd700; /* Bright Gold */
+            --secondary-color: #b3003b; /* Deep Crimson/Red */
             --background-color: #0d0d1a; /* Dark Blue/Black */
+            --reel-bg-color: #1a0040; /* Deep Purple for reels area */
+            --accent-color: #ff00ff; /* Vibrant Magenta for Spin/Play */
             --font-family: 'Arial', sans-serif;
             --container-width: 95%;
         }
@@ -64,7 +67,7 @@
         #authContainer, #lobbyContainer {
             padding: 20px;
             max-width: 90%;
-            width: 800px; /* Wider for the modern lobby layout */
+            width: 800px; 
             margin-top: 5vh;
             background: rgba(0, 0, 0, 0.4);
             border-radius: 10px;
@@ -72,8 +75,8 @@
         }
 
         h1 {
-            color: var(--secondary-color);
-            text-shadow: 1px 1px 3px var(--primary-color);
+            color: var(--primary-color);
+            text-shadow: 1px 1px 5px var(--secondary-color);
         }
 
         input {
@@ -101,7 +104,7 @@
         }
         
         button:hover:not(:disabled) {
-            background-color: #a00000;
+            background-color: #e6005c;
         }
         
         button:disabled {
@@ -126,36 +129,36 @@
 
         /* Jackpot Display */
         .jackpot-display-modern {
-            background: linear-gradient(145deg, #1c0f2b, #4a0000); /* Dark purple to deep red */
+            background: linear-gradient(145deg, #1c0f2b, #5f005f); 
             border: 5px solid var(--primary-color);
             border-radius: 15px;
             padding: 20px 40px;
             margin-bottom: 30px;
             text-align: center;
-            box-shadow: 0 0 25px rgba(255, 204, 0, 0.7);
+            box-shadow: 0 0 25px rgba(255, 215, 0, 0.7);
             animation: jackpot-glow 1.5s infinite alternate;
         }
 
         @keyframes jackpot-glow {
-            from { border-color: var(--primary-color); box-shadow: 0 0 15px rgba(255, 204, 0, 0.5); }
-            to { border-color: #fff; box-shadow: 0 0 25px rgba(255, 204, 0, 1); }
+            from { border-color: var(--primary-color); box-shadow: 0 0 15px rgba(255, 215, 0, 0.5); }
+            to { border-color: #fff; box-shadow: 0 0 25px rgba(255, 215, 0, 1); }
         }
 
         .jackpot-label {
             display: block;
             font-size: 0.9em;
-            color: #ffd700;
+            color: #ff9900;
             letter-spacing: 3px;
             margin-bottom: 5px;
             text-transform: uppercase;
         }
 
         .jackpot-value {
-            font-size: 3.5em; /* Large, digital look */
+            font-size: 3.5em; 
             font-weight: bold;
             color: white;
-            font-family: monospace; /* Gives a retro display look */
-            text-shadow: 0 0 10px #ffcc00, 0 0 20px #ffaa00;
+            font-family: monospace; 
+            text-shadow: 0 0 10px var(--primary-color), 0 0 20px #ffaa00;
         }
 
         .jackpot-currency {
@@ -187,23 +190,19 @@
 
         .balance-text {
             font-weight: bold;
-            color: #00ff88; /* Green for funds */
+            color: #00ff88; 
             font-size: 1.5em;
         }
 
         .game-card {
-            background: linear-gradient(180deg, #4a0000, #1c0f2b); /* Reverse gradient for contrast */
-            border: 2px solid var(--secondary-color);
+            background: linear-gradient(180deg, #5f005f, #1a0f2b); 
+            border: 2px solid var(--primary-color);
         }
 
         .play-btn {
-            width: 100%;
-            font-size: 1.2em;
-            padding: 15px 0;
-            margin-top: 15px;
-            background-color: #00ff88; /* Bright green play button */
-            color: var(--background-color);
-            border-color: #fff;
+            background-color: var(--accent-color); /* Magenta play button */
+            color: white;
+            border-color: var(--primary-color);
         }
 
         /* Mobile Responsiveness for Lobby */
@@ -212,7 +211,7 @@
                 font-size: 3em;
             }
             .lobby-content-grid {
-                flex-direction: column; /* Stack panels vertically on mobile */
+                flex-direction: column; 
             }
             .lobby-panel {
                 width: 100%;
@@ -223,7 +222,7 @@
         /* --- GAME CONTAINER & LAYOUT --- */
         #gameContainer {
             width: var(--container-width);
-            max-width: 800px; /* Constrain max width for desktop view */
+            max-width: 800px; 
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -248,18 +247,22 @@
             border-radius: 5px;
         }
         
-        /* Canvas Container */
+        /* Canvas Container - The main visual change for the slot area */
         #renderCanvas {
             width: 100%; 
+            border: 5px solid var(--primary-color); /* Strong, ornamental gold frame hint */
+            box-shadow: 0 0 25px 5px rgba(255, 215, 0, 0.8), 0 0 50px 10px rgba(255, 0, 255, 0.5); /* Dual glow (gold and magenta) */
+            background-color: var(--reel-bg-color); /* Deep purple background for the reels */
+            border-radius: 15px;
+            overflow: hidden;
         }
         
         #renderCanvas canvas {
-            /* Ensures the canvas scales responsively inside its container */
             width: 100% !important;
             height: auto !important;
             display: block; 
-            box-shadow: 0 0 15px 5px rgba(255, 204, 0, 0.5);
-            border-radius: 10px;
+            /* Remove internal box-shadow since the container handles the glow now */
+            box-shadow: none; 
         }
         
         /* Game Controls */
@@ -271,20 +274,32 @@
             max-width: 600px;
             padding: 15px 0;
         }
+
+        /* Bet +/- Buttons - Stylized to look like control pads */
+        #gameControls button {
+            background-color: var(--secondary-color);
+            color: white;
+            border: 3px solid var(--primary-color);
+            border-radius: 50px; /* Circular/Pill shape */
+            padding: 10px 15px;
+            font-size: 1.1em;
+            width: 70px;
+        }
         
         #spinButton {
-            background-color: var(--primary-color);
-            color: var(--secondary-color);
-            font-size: 1.5em;
-            padding: 15px 30px;
-            border-color: white;
+            background-color: var(--accent-color);
+            color: white;
+            font-size: 1.6em;
+            padding: 18px 40px;
+            border-color: var(--primary-color);
+            border-radius: 10px;
             animation: pulse-spin 2s infinite;
         }
         
         @keyframes pulse-spin {
-            0% { transform: scale(1.0); box-shadow: 0 0 5px var(--primary-color); }
-            50% { transform: scale(1.05); box-shadow: 0 0 15px var(--primary-color); }
-            100% { transform: scale(1.0); box-shadow: 0 0 5px var(--primary-color); }
+            0% { transform: scale(1.0); box-shadow: 0 0 5px var(--accent-color); }
+            50% { transform: scale(1.05); box-shadow: 0 0 15px var(--accent-color); }
+            100% { transform: scale(1.0); box-shadow: 0 0 5px var(--accent-color); }
         }
 
         /* Result Overlay */
@@ -298,7 +313,7 @@
             color: var(--primary-color);
             font-size: 2.5em;
             font-weight: bold;
-            border: 4px solid var(--secondary-color);
+            border: 4px solid var(--accent-color);
             border-radius: 10px;
             z-index: 1000;
             opacity: 0;
@@ -320,7 +335,7 @@
             height: 100%;
             background: rgba(0, 0, 0, 0.8);
             z-index: 2000;
-            display: none; /* Changed from flex to none */
+            display: none; 
             justify-content: center;
             align-items: center;
             opacity: 0;
@@ -329,7 +344,7 @@
         }
 
         #fundsModal.show {
-            display: flex; /* Show using flex when class is added */
+            display: flex;
             opacity: 1;
             visibility: visible;
         }
