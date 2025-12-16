@@ -23,12 +23,9 @@
     
     <style>
         :root {
-            /* Updated for a brighter, golden, and purple theme */
-            --primary-color: #ffd700; /* Bright Gold */
-            --secondary-color: #b3003b; /* Deep Crimson/Red */
+            --primary-color: #ffcc00; /* Gold/Yellow */
+            --secondary-color: #8c0000; /* Deep Red */
             --background-color: #0d0d1a; /* Dark Blue/Black */
-            --reel-bg-color: #1a0040; /* Deep Purple for reels area */
-            --accent-color: #ff00ff; /* Vibrant Magenta for Spin/Play */
             --font-family: 'Arial', sans-serif;
             --container-width: 95%;
         }
@@ -63,20 +60,19 @@
             align-items: center;
         }
 
-        /* --- AUTH & LOBBY UI (Shared Styles) --- */
+        /* --- AUTH & LOBBY UI --- */
         #authContainer, #lobbyContainer {
             padding: 20px;
-            max-width: 90%;
-            width: 800px; 
-            margin-top: 5vh;
+            max-width: 400px;
+            margin-top: 10vh;
             background: rgba(0, 0, 0, 0.4);
             border-radius: 10px;
             text-align: center;
         }
 
         h1 {
-            color: var(--primary-color);
-            text-shadow: 1px 1px 5px var(--secondary-color);
+            color: var(--secondary-color);
+            text-shadow: 1px 1px 3px var(--primary-color);
         }
 
         input {
@@ -104,7 +100,7 @@
         }
         
         button:hover:not(:disabled) {
-            background-color: #e6005c;
+            background-color: #a00000;
         }
         
         button:disabled {
@@ -119,110 +115,10 @@
         }
 
 
-        /* --- NEW MODERN LOBBY STYLES --- */
-
-        .lobby-title {
-            font-size: 2.5em;
-            margin-bottom: 20px;
-            letter-spacing: 2px;
-        }
-
-        /* Jackpot Display */
-        .jackpot-display-modern {
-            background: linear-gradient(145deg, #1c0f2b, #5f005f); 
-            border: 5px solid var(--primary-color);
-            border-radius: 15px;
-            padding: 20px 40px;
-            margin-bottom: 30px;
-            text-align: center;
-            box-shadow: 0 0 25px rgba(255, 215, 0, 0.7);
-            animation: jackpot-glow 1.5s infinite alternate;
-        }
-
-        @keyframes jackpot-glow {
-            from { border-color: var(--primary-color); box-shadow: 0 0 15px rgba(255, 215, 0, 0.5); }
-            to { border-color: #fff; box-shadow: 0 0 25px rgba(255, 215, 0, 1); }
-        }
-
-        .jackpot-label {
-            display: block;
-            font-size: 0.9em;
-            color: #ff9900;
-            letter-spacing: 3px;
-            margin-bottom: 5px;
-            text-transform: uppercase;
-        }
-
-        .jackpot-value {
-            font-size: 3.5em; 
-            font-weight: bold;
-            color: white;
-            font-family: monospace; 
-            text-shadow: 0 0 10px var(--primary-color), 0 0 20px #ffaa00;
-        }
-
-        .jackpot-currency {
-            font-size: 1.5em;
-            color: var(--primary-color);
-            margin-left: 10px;
-        }
-
-        /* Lobby Grid Layout */
-        .lobby-content-grid {
-            display: flex;
-            gap: 30px;
-            width: 100%;
-            max-width: 800px;
-        }
-
-        .lobby-panel {
-            flex: 1;
-            background: rgba(0, 0, 0, 0.5);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-        }
-
-        .user-panel h2 {
-            color: #fff;
-        }
-
-        .balance-text {
-            font-weight: bold;
-            color: #00ff88; 
-            font-size: 1.5em;
-        }
-
-        .game-card {
-            background: linear-gradient(180deg, #5f005f, #1a0f2b); 
-            border: 2px solid var(--primary-color);
-        }
-
-        .play-btn {
-            background-color: var(--accent-color); /* Magenta play button */
-            color: white;
-            border-color: var(--primary-color);
-        }
-
-        /* Mobile Responsiveness for Lobby */
-        @media (max-width: 700px) {
-            .jackpot-value {
-                font-size: 3em;
-            }
-            .lobby-content-grid {
-                flex-direction: column; 
-            }
-            .lobby-panel {
-                width: 100%;
-            }
-        }
-
-
         /* --- GAME CONTAINER & LAYOUT --- */
         #gameContainer {
             width: var(--container-width);
-            max-width: 800px; 
+            max-width: 800px; /* Constrain max width for desktop view */
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -247,22 +143,20 @@
             border-radius: 5px;
         }
         
-        /* Canvas Container - The main visual change for the slot area */
+        /* Canvas Container */
         #renderCanvas {
+            /* This is the container where Phaser puts the canvas */
             width: 100%; 
-            border: 5px solid var(--primary-color); /* Strong, ornamental gold frame hint */
-            box-shadow: 0 0 25px 5px rgba(255, 215, 0, 0.8), 0 0 50px 10px rgba(255, 0, 255, 0.5); /* Dual glow (gold and magenta) */
-            background-color: var(--reel-bg-color); /* Deep purple background for the reels */
-            border-radius: 15px;
-            overflow: hidden;
+            /* On desktop, this will be 800px wide. On mobile, it shrinks. */
         }
         
         #renderCanvas canvas {
+            /* Ensures the canvas scales responsively inside its container */
             width: 100% !important;
             height: auto !important;
             display: block; 
-            /* Remove internal box-shadow since the container handles the glow now */
-            box-shadow: none; 
+            box-shadow: 0 0 15px 5px rgba(255, 204, 0, 0.5);
+            border-radius: 10px;
         }
         
         /* Game Controls */
@@ -274,32 +168,20 @@
             max-width: 600px;
             padding: 15px 0;
         }
-
-        /* Bet +/- Buttons - Stylized to look like control pads */
-        #gameControls button {
-            background-color: var(--secondary-color);
-            color: white;
-            border: 3px solid var(--primary-color);
-            border-radius: 50px; /* Circular/Pill shape */
-            padding: 10px 15px;
-            font-size: 1.1em;
-            width: 70px;
-        }
         
         #spinButton {
-            background-color: var(--accent-color);
-            color: white;
-            font-size: 1.6em;
-            padding: 18px 40px;
-            border-color: var(--primary-color);
-            border-radius: 10px;
+            background-color: var(--primary-color);
+            color: var(--secondary-color);
+            font-size: 1.5em;
+            padding: 15px 30px;
+            border-color: white;
             animation: pulse-spin 2s infinite;
         }
         
         @keyframes pulse-spin {
-            0% { transform: scale(1.0); box-shadow: 0 0 5px var(--accent-color); }
-            50% { transform: scale(1.05); box-shadow: 0 0 15px var(--accent-color); }
-            100% { transform: scale(1.0); box-shadow: 0 0 5px var(--accent-color); }
+            0% { transform: scale(1.0); box-shadow: 0 0 5px var(--primary-color); }
+            50% { transform: scale(1.05); box-shadow: 0 0 15px var(--primary-color); }
+            100% { transform: scale(1.0); box-shadow: 0 0 5px var(--primary-color); }
         }
 
         /* Result Overlay */
@@ -313,7 +195,7 @@
             color: var(--primary-color);
             font-size: 2.5em;
             font-weight: bold;
-            border: 4px solid var(--accent-color);
+            border: 4px solid var(--secondary-color);
             border-radius: 10px;
             z-index: 1000;
             opacity: 0;
@@ -335,7 +217,7 @@
             height: 100%;
             background: rgba(0, 0, 0, 0.8);
             z-index: 2000;
-            display: none; 
+            display: flex;
             justify-content: center;
             align-items: center;
             opacity: 0;
@@ -344,7 +226,6 @@
         }
 
         #fundsModal.show {
-            display: flex;
             opacity: 1;
             visibility: visible;
         }
@@ -363,11 +244,12 @@
             margin-top: 10px;
         }
         
-        /* Mobile-specific adjustments */
+        /* Mobile-specific adjustments (Optional but good practice) */
         @media (max-width: 850px) {
+            /* Center the main canvas on smaller screens */
             #renderCanvas {
-                width: 95vw;
-                height: calc(95vw * (600/800)); 
+                width: 95vw; /* Use viewport width */
+                height: calc(95vw * (600/800)); /* Maintain 4:3 aspect ratio */
                 max-width: none;
             }
         }
@@ -402,34 +284,14 @@
         </div>
 
         <div id="lobbyContainer" style="display: none;">
-            <h1 class="lobby-title">BIG NICKEL CASINO</h1>
-    
-            <div id="lobbyJackpotDisplay" class="jackpot-display-modern">
-                <span class="jackpot-label">PROGRESSIVE JACKPOT</span>
-                <span id="jackpotAmount" class="jackpot-value">0.00</span> 
-                <span class="jackpot-currency">$</span>
+            <h1>Lobby</h1>
+            <div class="info-panel">
+                <span>Your Balance: <span id="userBalance">0.00</span></span>
+                <span>Jackpot: <span id="jackpotAmount">0.00</span></span>
             </div>
-
-            <div class="lobby-content-grid">
-                
-                <div class="lobby-panel user-panel">
-                    <h2>Welcome Back!</h2>
-                    <p>Your Balance: <span id="userBalance" class="balance-text">0.00</span></p>
-                    <div class="panel-buttons">
-                        <button onclick="showFundsModal()">Add / Withdraw Funds</button>
-                        <button onclick="logout()" class="logout-btn">Logout</button>
-                    </div>
-                </div>
-
-                <div class="lobby-panel game-card">
-                    <h2>The Slot Machine</h2>
-                    <p>Ready to chase the big nickel?</p>
-                    <button onclick="playGame()" class="play-btn">
-                        Play Slot Machine
-                    </button>
-                </div>
-                
-            </div>
+            <button onclick="playGame()">Start Slot Machine</button>
+            <button onclick="showFundsModal()">Manage Funds</button>
+            <button onclick="logout()">Logout</button>
         </div>
 
         <div id="gameContainer" style="display: none;">
