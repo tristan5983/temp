@@ -50,17 +50,36 @@ function animateValue(id, start, end, duration) {
  * Updates the balance and bet displays across all relevant elements.
  */
 function updateUI() {
-    const balance = currentUser ? currentUser.balance : 0.00;
-    const jackpot = currentUser ? currentUser.jackpot : 0.00;
+    const balance = currentUser ? (currentUser.balance || 0.00) : 0.00;
+    const jackpot = currentUser ? (currentUser.jackpot || 0.00) : 0.00;
 
     // Update Lobby
-    document.getElementById('userBalance').textContent = balance.toFixed(2);
-    animateValue('jackpotAmount', parseFloat(document.getElementById('jackpotAmount').textContent.replace(/,/g, '')), jackpot, 500);
+    const userBalanceEl = document.getElementById('userBalance');
+    if (userBalanceEl) {
+        userBalanceEl.textContent = balance.toFixed(2);
+    }
+    
+    const jackpotAmountEl = document.getElementById('jackpotAmount');
+    if (jackpotAmountEl) {
+        const currentJackpot = parseFloat(jackpotAmountEl.textContent.replace(/,/g, '')) || 0;
+        animateValue('jackpotAmount', currentJackpot, jackpot, 500);
+    }
 
     // Update Game
-    document.getElementById('gameBalance').textContent = balance.toFixed(2);
-    document.getElementById('gameJackpot').textContent = jackpot.toFixed(2);
-    document.getElementById('betDisplay').textContent = currentBet.toFixed(2);
+    const gameBalanceEl = document.getElementById('gameBalance');
+    if (gameBalanceEl) {
+        gameBalanceEl.textContent = balance.toFixed(2);
+    }
+    
+    const gameJackpotEl = document.getElementById('gameJackpot');
+    if (gameJackpotEl) {
+        gameJackpotEl.textContent = jackpot.toFixed(2);
+    }
+    
+    const betDisplayEl = document.getElementById('betDisplay');
+    if (betDisplayEl) {
+        betDisplayEl.textContent = currentBet.toFixed(2);
+    }
 }
 
 /**
@@ -460,13 +479,20 @@ class SlotMachineScene extends Phaser.Scene {
         this.isSpinning = false;
         
         // Update user data and UI from server result
-        currentUser = result.user;
-        document.getElementById('gameWin').textContent = result.winAmount.toFixed(2);
+        if (result.user) {
+            currentUser = result.user;
+        }
+        
+        const winAmount = result.winAmount || 0;
+        const gameWinEl = document.getElementById('gameWin');
+        if (gameWinEl) {
+            gameWinEl.textContent = winAmount.toFixed(2);
+        }
         updateUI();
 
-        if (result.winAmount > 0) {
-            this.displayWin(result.winLines);
-            this.showResultOverlay(`WIN! ${result.winAmount.toFixed(2)}`, 3000);
+        if (winAmount > 0) {
+            this.displayWin(result.winLines || []);
+            this.showResultOverlay(`WIN! ${winAmount.toFixed(2)}`, 3000);
         } else {
             this.showResultOverlay("NO WIN", 1500);
         }
