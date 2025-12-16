@@ -50,36 +50,19 @@ function animateValue(id, start, end, duration) {
  * Updates the balance and bet displays across all relevant elements.
  */
 function updateUI() {
-    const balance = currentUser ? (currentUser.balance || 0.00) : 0.00;
-    const jackpot = currentUser ? (currentUser.jackpot || 0.00) : 0.00;
+    const balance = currentUser ? currentUser.balance : 0.00;
+    const jackpot = currentUser ? currentUser.jackpot : 0.00;
 
     // Update Lobby
-    const userBalanceEl = document.getElementById('userBalance');
-    if (userBalanceEl) {
-        userBalanceEl.textContent = balance.toFixed(2);
-    }
-    
-    const jackpotAmountEl = document.getElementById('jackpotAmount');
-    if (jackpotAmountEl) {
-        const currentJackpot = parseFloat(jackpotAmountEl.textContent.replace(/,/g, '')) || 0;
-        animateValue('jackpotAmount', currentJackpot, jackpot, 500);
-    }
+    document.getElementById('userBalance').textContent = balance.toFixed(2);
+    // Ensure the animated value can handle commas from previous display
+    const currentJackpotValue = parseFloat(document.getElementById('jackpotAmount').textContent.replace(/,/g, '')) || 0;
+    animateValue('jackpotAmount', currentJackpotValue, jackpot, 500);
 
     // Update Game
-    const gameBalanceEl = document.getElementById('gameBalance');
-    if (gameBalanceEl) {
-        gameBalanceEl.textContent = balance.toFixed(2);
-    }
-    
-    const gameJackpotEl = document.getElementById('gameJackpot');
-    if (gameJackpotEl) {
-        gameJackpotEl.textContent = jackpot.toFixed(2);
-    }
-    
-    const betDisplayEl = document.getElementById('betDisplay');
-    if (betDisplayEl) {
-        betDisplayEl.textContent = currentBet.toFixed(2);
-    }
+    document.getElementById('gameBalance').textContent = balance.toFixed(2);
+    document.getElementById('gameJackpot').textContent = jackpot.toFixed(2);
+    document.getElementById('betDisplay').textContent = currentBet.toFixed(2);
 }
 
 /**
@@ -136,6 +119,7 @@ function showMessage(message) {
 
 function toggleControls(enable) {
     document.getElementById('spinButton').disabled = !enable;
+    document.getElementById('gameControls').querySelectorAll('button').forEach(btn => btn.disabled = !enable);
 }
 
 // ======================================================
@@ -337,71 +321,54 @@ class SlotMachineScene extends Phaser.Scene {
         });
         this.load.image('slot_frame_ui', '/textures/slot_frame_ui.png');
         this.load.image('coin', '/textures/coin.png');
-        // The newly created asset (optional - can use rectangle for glow)
-        // this.load.image('frame', '/textures/frame_glow.png'); 
+        // The asset for the ornate glowing frame
+        this.load.image('frame', '/textures/frame_glow.png'); 
     }
 
     create() {
-        sceneInstance = this;
+        sceneInstance = this; // Set the global reference
 
         const { gameWidth, gameHeight } = this;
         const reelCount = 3;
-        const symbolSize = 150;
+        const symbolSize = 150; 
+        const reelXPositions = [gameWidth / 2 - 170, gameWidth / 2, gameWidth / 2 + 170];
         
-        // Updated reel positions to match the background windows
-        const reelXPositions = [
-            gameWidth / 2 - 177.5,  // Left reel
-            gameWidth / 2,           // Center reel  
-            gameWidth / 2 + 177.5    // Right reel
-        ];
-        
-        // Vertical center for the reels
-        const reelCenterY = gameHeight / 2 - 15; // Adjusted to match background window position
-        
-        // 1. Background Frame
+        // 1. Background and Frame (Depends on user-provided asset)
         const frame = this.add.image(gameWidth / 2, gameHeight / 2, 'slot_frame_ui');
-        frame.setDisplaySize(gameWidth, gameHeight);
+        // Scaling to fit the 800x600 canvas
+        frame.setScale(gameWidth / frame.width, gameHeight / frame.height); 
 
-        // 2. Create Reel Masks and Containers
+        // 2. Reel Masks (to hide symbols above/below the visible area)
         for (let i = 0; i < reelCount; i++) {
-            // Create mask for each reel (matches the white/light gray windows in the background)
+            // Define the visible area for the reels (3 symbol height)
             const maskGraphics = this.make.graphics({ x: 0, y: 0, add: false });
             maskGraphics.fillRect(
-                reelXPositions[i] - 77.5,  // Window width is 155px, so half is 77.5
-                reelCenterY - 120,          // Window height is 240px, so half is 120
-                155,                         // Width of visible reel window
-                240                          // Height of visible reel window (shows ~1.6 symbols)
+                reelXPositions[i] - symbolSize / 2, 
+                gameHeight / 2 - (symbolSize * 1.5), 
+                symbolSize, 
+                symbolSize * 3 
             );
             const mask = maskGraphics.createGeometryMask();
 
-            // Create Reel Container
+            // 3. Create Reel Container
             const reel = this.add.container(reelXPositions[i], 0);
             reel.setMask(mask);
             this.reels.push(reel);
-            this.reelStops.push(0);
+            this.reelStops.push(0); 
 
-            // Add glow frame for win effects (using rectangle instead of image)
-            const glowFrame = this.add.rectangle(
-                reelXPositions[i], 
-                reelCenterY, 
-                155, 
-                240, 
-                0xffaa00, 
-                0
-            );
-            glowFrame.setStrokeStyle(4, 0xffaa00);
+            // Add glow frames for win effects
+            const glowFrame = this.add.image(reelXPositions[i], gameHeight / 2, 'frame');
+            glowFrame.setScale(0.9);
+            glowFrame.setTint(0xffaa00);
             glowFrame.setVisible(false);
             this.glowFrames.push(glowFrame);
 
-            // Populate reel with symbols (20 positions for smooth spinning)
+            // Populate reel with symbols (e.g., 20 positions)
             for (let j = 0; j < 20; j++) {
                 const randomSymbolKey = Phaser.Math.RND.pick(SYMBOLS);
-                const symbol = this.add.image(
-                    0, 
-                    reelCenterY + (j - 10) * symbolSize, 
-                    randomSymbolKey
-                );
-                symbol.setScale(0.85); // Slightly smaller to fit the window better
+                // Position symbols 150px apart vertically
+                const symbol = this.add.image(0, gameHeight / 2 + (j - 10) * symbolSize, randomSymbolKey);
+                symbol.setScale(0.9);
                 reel.add(symbol);
             }
         }
@@ -430,40 +397,34 @@ class SlotMachineScene extends Phaser.Scene {
         const symbolSize = 150;
         const baseSpeed = 1000;
         const durationMultiplier = 0.5;
-        const reelCenterY = this.gameHeight / 2 - 15; // Match the create() method
 
-        const finalSymbolKeys = result.finalSymbols;
+        // Map final symbols to the reel's list of symbols
+        const finalSymbolKeys = result.finalSymbols; 
 
         this.reels.forEach((reel, i) => {
-            // Find the target symbol to land on
+            // Find the index of the final symbol we want to land on
             const targetSymbolKey = finalSymbolKeys[i];
-            const targetIndex = reel.list.findIndex(
-                img => img.texture.key === targetSymbolKey && 
-                Math.abs(img.y - reelCenterY) < symbolSize / 2
-            );
+            // Assuming the first visible symbol (y = 300) is the middle one
+            const targetIndex = reel.list.findIndex(img => img.texture.key === targetSymbolKey && img.y === this.gameHeight / 2); 
 
-            // If exact match not found, find closest symbol with that key
-            let symbolIndex = targetIndex;
-            if (symbolIndex === -1) {
-                symbolIndex = reel.list.findIndex(img => img.texture.key === targetSymbolKey);
-            }
-
-            const targetY = reel.list[symbolIndex].y;
-            const yOffset = reelCenterY - targetY;
+            // Calculate target Y offset to position the symbol exactly in the center
+            const targetY = reel.list[targetIndex].y;
+            const yOffset = this.gameHeight / 2 - targetY;
             
-            // Random overshoot for realistic spin effect
-            const overshoot = Phaser.Math.Between(5, 10) * symbolSize;
+            // Generate a random additional distance for realistic spin
+            const overshoot = Phaser.Math.Between(5, 10) * symbolSize; 
             const spinDistance = yOffset - overshoot;
 
+            // Apply the new position to the container
             reel.y = spinDistance;
 
             this.tweens.add({
                 targets: reel,
-                y: yOffset,
-                duration: baseSpeed + i * baseSpeed * durationMultiplier,
-                ease: 'Back.easeOut',
+                y: yOffset, // End Y is the calculated offset
+                duration: baseSpeed + i * baseSpeed * durationMultiplier, // Staggered duration
+                ease: 'Back.easeOut', 
                 onComplete: () => {
-                    this.reelStops[i] = targetY;
+                    this.reelStops[i] = targetY; // Save stop position 
                     if (i === this.reels.length - 1) {
                         this.onSpinComplete(result);
                     }
@@ -479,20 +440,13 @@ class SlotMachineScene extends Phaser.Scene {
         this.isSpinning = false;
         
         // Update user data and UI from server result
-        if (result.user) {
-            currentUser = result.user;
-        }
-        
-        const winAmount = result.winAmount || 0;
-        const gameWinEl = document.getElementById('gameWin');
-        if (gameWinEl) {
-            gameWinEl.textContent = winAmount.toFixed(2);
-        }
+        currentUser = result.user;
+        document.getElementById('gameWin').textContent = result.winAmount.toFixed(2);
         updateUI();
 
-        if (winAmount > 0) {
-            this.displayWin(result.winLines || []);
-            this.showResultOverlay(`WIN! ${winAmount.toFixed(2)}`, 3000);
+        if (result.winAmount > 0) {
+            this.displayWin(result.winLines);
+            this.showResultOverlay(`WIN! ${result.winAmount.toFixed(2)}`, 3000);
         } else {
             this.showResultOverlay("NO WIN", 1500);
         }
